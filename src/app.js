@@ -3,7 +3,8 @@ import swaggerUi from 'swagger-ui-express';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createStore } from './store.js';
-import { InputError, validateBody, validateQuery } from './validation.js';
+import { validateBody, validateQuery } from './validation.js';
+import { createErrorHandler } from './error-handler.js';
 import { openapi } from './openapi.js';
 
 export const defaultDataFile = fileURLToPath(new URL('../data/anime.json', import.meta.url));
@@ -64,21 +65,6 @@ export function createApp({ dataFile = defaultDataFile, logger = console } = {})
   });
 
   app.use((req, res) => res.status(404).json({ error: 'Routen hittades inte.' }));
-  app.use((error, req, res, next) => {
-    if (error instanceof InputError) {
-      return res.status(error.status).json({ error: error.message });
-    }
-    if (error.type === 'entity.parse.failed') {
-      return res.status(400).json({ error: 'Body innehåller ogiltig JSON.' });
-    }
-    if (error.type === 'entity.too.large') {
-      return res.status(413).json({ error: 'Body får vara högst 10 kB.' });
-    }
-    if (error.status === 415) {
-      return res.status(415).json({ error: 'Teckenkodningen eller komprimeringen stöds inte.' });
-    }
-    logger.error(error);
-    res.status(500).json({ error: 'Ett internt serverfel inträffade.' });
-  });
+  app.use(createErrorHandler(logger));
   return app;
 }
