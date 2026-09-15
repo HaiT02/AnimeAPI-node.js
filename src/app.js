@@ -1,8 +1,10 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createStore } from './store.js';
 import { InputError, validateBody, validateQuery } from './validation.js';
+import { openapi } from './openapi.js';
 
 export const defaultDataFile = fileURLToPath(new URL('../data/anime.json', import.meta.url));
 
@@ -11,6 +13,8 @@ export function createApp({ dataFile = defaultDataFile, logger = console } = {})
   const store = createStore(dataFile);
   app.disable('x-powered-by');
   app.use(express.json({ limit: '10kb' }));
+  app.get('/openapi.json', (req, res) => res.json(openapi));
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi, { swaggerOptions: { validatorUrl: null } }));
 
   app.get('/anime', (req, res) => {
     const { genre, status, q, page, limit } = validateQuery(req.query);
