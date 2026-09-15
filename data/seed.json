@@ -1,0 +1,17 @@
+[
+  { "id": "1", "title": "Naruto", "genre": "action", "episodes": 220, "status": "finished" },
+  { "id": "2", "title": "Death Note", "genre": "thriller", "episodes": 37, "status": "finished" },
+  { "id": "3", "title": "Fullmetal Alchemist: Brotherhood", "genre": "fantasy", "episodes": 64, "status": "finished" },
+  { "id": "4", "title": "Cowboy Bebop", "genre": "sci-fi", "episodes": 26, "status": "finished" },
+  { "id": "5", "title": "Samurai Champloo", "genre": "adventure", "episodes": 26, "status": "finished" },
+  { "id": "6", "title": "Toradora!", "genre": "romance", "episodes": 25, "status": "finished" },
+  { "id": "7", "title": "Steins;Gate", "genre": "sci-fi", "episodes": 24, "status": "finished" },
+  { "id": "8", "title": "Erased", "genre": "thriller", "episodes": 12, "status": "finished" },
+  { "id": "9", "title": "Your Lie in April", "genre": "drama", "episodes": 22, "status": "finished" },
+  { "id": "10", "title": "Angel Beats!", "genre": "drama", "episodes": 13, "status": "finished" },
+  { "id": "11", "title": "Death Parade", "genre": "thriller", "episodes": 12, "status": "finished" },
+  { "id": "12", "title": "Anohana: The Flower We Saw That Day", "genre": "drama", "episodes": 11, "status": "finished" },
+  { "id": "13", "title": "Parasyte: The Maxim", "genre": "action", "episodes": 24, "status": "finished" },
+  { "id": "14", "title": "Monster", "genre": "thriller", "episodes": 74, "status": "finished" },
+  { "id": "15", "title": "Trigun (1998)", "genre": "action", "episodes": 26, "status": "finished" }
+]
