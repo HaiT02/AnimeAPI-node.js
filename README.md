@@ -1,10 +1,12 @@
 # Anime API
 
-Ett REST API byggt med Node.js och Express för att hantera anime. Projektet innehåller ingen frontend. API:et har CRUD-operationer, filtrering, paginering och lagring i en JSON-fil.
+Det här är mitt projekt för inlämning 2. Jag har byggt ett API med Node.js och Express där man kan lägga till, hämta, ändra och ta bort anime. Jag har hållit det ganska enkelt med en JSON-fil som lagring och ingen frontend.
+
+Det följer med 15 anime, bland annat Naruto, Death Note och Cowboy Bebop, så det finns data att testa direkt.
 
 ## Kom igång
 
-Kräver **Node.js 22 eller senare**, npm och Git. Projektet har testats med Node.js 24.
+Du behöver Node.js 22 eller senare, npm och Git.
 
 ```bash
 git clone https://github.com/HaiT02/AnimeAPI-node.js.git
@@ -13,43 +15,25 @@ npm ci
 npm start
 ```
 
-Servern körs på `http://localhost:3000`. Vid första starten skapas `data/anime.json` med en tom lista. Sparad data finns kvar efter omstart. Ingen databasinstallation eller API-nyckel behövs.
+API:et finns på `http://localhost:3000/anime`.
 
-| Kommando | Beskrivning |
-| --- | --- |
-| `npm start` | Startar API:et |
-| `npm run dev` | Startar med automatisk omstart vid kodändringar |
-| `npm test` | Kör alla automatiska tester |
-| `npm run test:coverage` | Kör testerna och visar kodtäckning |
+Öppna **[Swagger-dokumentationen](http://localhost:3000/docs/)** för att testa anropen med **Try it out**. Där finns också mer detaljer om alla fält och svar. OpenAPI-specifikationen finns på `/openapi.json`.
 
-Miljövariablerna `PORT` och `DATA_FILE` kan användas för att byta port och sökväg till datafilen. Standardvärden är `3000` och projektets `data/anime.json`. En relativ `DATA_FILE` utgår från terminalens arbetsmapp.
+## Använda API:et
 
-Exempel i PowerShell:
-
-```powershell
-$env:PORT = '3001'
-npm start
-```
-
-## API-dokumentation
-
-Interaktiv dokumentation med **Swagger UI** finns på [http://localhost:3000/docs/](http://localhost:3000/docs/). Där går det att läsa om och testa alla endpoints med **Try it out**. OpenAPI-specifikationen finns på [http://localhost:3000/openapi.json](http://localhost:3000/openapi.json) och definieras i [src/openapi.js](src/openapi.js).
-
-### Endpoints
-
-Alla sökvägar utgår från `http://localhost:3000`. POST och PUT kräver `Content-Type: application/json`. Svaren är JSON, förutom DELETE som ger ett tomt svar vid lyckad borttagning.
-
-| Metod | Sökväg | Funktion | Lyckat svar |
+| Metod | Endpoint | Vad den gör | Lyckat svar |
 | --- | --- | --- | --- |
-| GET | `/anime` | Lista, filtrera och paginera anime | `200 OK` |
-| GET | `/anime/:id` | Hämta en anime | `200 OK` |
-| POST | `/anime` | Skapa en anime | `201 Created` |
-| PUT | `/anime/:id` | Ersätta en anime, alla fyra fält krävs | `200 OK` |
-| DELETE | `/anime/:id` | Ta bort en anime | `204 No Content` |
+| GET | `/anime` | Hämtar en lista med anime | 200 |
+| GET | `/anime/:id` | Hämtar en anime med ett visst id | 200 |
+| POST | `/anime` | Lägger till en anime | 201 |
+| PUT | `/anime/:id` | Uppdaterar en anime | 200 |
+| DELETE | `/anime/:id` | Tar bort en anime | 204, tomt svar |
 
-### Data och validering
+Till exempel hämtar `/anime/1` Naruto från startdatan. När du skapar en ny anime får den ett id automatiskt.
 
-Exempel på body för POST och PUT:
+### Lägga till eller ändra
+
+POST och PUT använder `Content-Type: application/json`. Skicka alla fyra fält, även när du uppdaterar:
 
 ```json
 {
@@ -60,144 +44,53 @@ Exempel på body för POST och PUT:
 }
 ```
 
-| Fält | Typ | Regler |
-| --- | --- | --- |
-| `title` | string | 1–120 tecken efter rensning. HTML-vinkelparenteser och kontrolltecken avvisas. |
-| `genre` | string | `action`, `adventure`, `comedy`, `drama`, `fantasy`, `romance`, `sci-fi`, `slice-of-life`, `sports` eller `thriller` |
-| `episodes` | integer | Heltal mellan 0 och 100000. Tal som text accepteras inte. |
-| `status` | string | `upcoming`, `ongoing` eller `finished` |
+- `title`: 1–120 tecken.
+- `genre`: `action`, `adventure`, `comedy`, `drama`, `fantasy`, `romance`, `sci-fi`, `slice-of-life`, `sports` eller `thriller`.
+- `episodes`: ett heltal mellan 0 och 100000.
+- `status`: `upcoming`, `ongoing` eller `finished`.
 
-Alla fyra fält är obligatoriska. Okända fält avvisas. Servern skapar ett UUID som `id`; klienten ska inte skicka ett eget id. POST returnerar det skapade objektet och en `Location`-header med postens sökväg. PUT behåller postens id.
+Extra fält tillåts inte. Onödiga blanksteg rensas bort och genre/status görs om till små bokstäver. HTML-vinkelparenteser och kontrolltecken avvisas. Body får vara högst 10 kB.
 
-Sanering sker innan data sparas: omgivande blanksteg tas bort, upprepade blanksteg blir ett och genre/status omvandlas till små bokstäver. Exempelvis blir `" ACTION "` till `"action"`. Titlar lagras som ren text; `<`, `>` och kontrolltecken ger `400`. Request body får vara högst 10 kB. Data körs aldrig som kod. En eventuell framtida klient behöver fortfarande rendera titlar som text och undvika att tolka dem som HTML.
-
-### Filtrering och paginering
-
-| Parameter | Beskrivning | Standard |
-| --- | --- | --- |
-| `genre` | Exakt genre ur listan ovan | Alla genrer |
-| `status` | Exakt status ur listan ovan | Alla statusar |
-| `q` | Sök efter en del av titeln, 1–120 tecken ren text | Ingen sökning |
-| `page` | Positivt heltal, högst 9007199254740991 | `1` |
-| `limit` | Antal poster per sida, heltal 1–50 | `10` |
-
-Textfilter ignorerar skillnader mellan stora och små bokstäver. Flera filter kan kombineras; varje träff måste uppfylla samtliga filter. Filtreringen görs före pagineringen. Posterna returneras i den ordning de skapades. Okända, upprepade eller ogiltiga parametrar ger `400`.
+### Filtrera och bläddra
 
 ```text
-GET /anime
-GET /anime?genre=action
-GET /anime?genre=action&status=finished&page=1&limit=3
-GET /anime?q=naruto
-GET /anime?page=2
+/anime?genre=action
+/anime?status=finished
+/anime?q=naruto
+/anime?page=2
+/anime?genre=action&page=1&limit=3
 ```
 
-Exempel på listsvar:
+`q` söker i titeln. Textfilter fungerar oavsett stora eller små bokstäver och kan kombineras. Som standard visas 10 anime per sida. `page` börjar på 1 och `limit` kan vara 1–50.
 
-```json
-{
-  "data": [
-    {
-      "id": "93cab4e7-10d8-4dc4-9a9a-93f65c8d49c0",
-      "title": "Naruto",
-      "genre": "action",
-      "episodes": 220,
-      "status": "finished"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 1,
-    "totalPages": 1
-  }
-}
-```
+Listsvaren innehåller `data` med anime och `pagination` med `page`, `limit`, `total` och `totalPages`. Antalet räknas efter filtrering. Om inget matchar får du en tom lista.
 
-`total` är antalet träffar efter filtrering, före paginering. En sida utanför resultatet ger `200` med `data: []`. När inga poster matchar är både `total` och `totalPages` noll.
+### Om något blir fel
 
-### Prova CRUD i PowerShell
-
-Starta servern i en terminal och kör följande i en annan:
-
-```powershell
-$baseUrl = 'http://localhost:3000'
-
-# CREATE
-$body = @{ title = 'Naruto'; genre = 'action'; episodes = 220; status = 'finished' } | ConvertTo-Json
-$anime = Invoke-RestMethod "$baseUrl/anime" -Method Post -ContentType 'application/json' -Body $body
-
-# READ: lista och enskild post
-Invoke-RestMethod "$baseUrl/anime?genre=action&page=1&limit=3"
-Invoke-RestMethod "$baseUrl/anime/$($anime.id)"
-
-# UPDATE: PUT ersätter samtliga redigerbara fält
-$updated = @{ title = 'Naruto Shippuden'; genre = 'action'; episodes = 500; status = 'finished' } | ConvertTo-Json
-Invoke-RestMethod "$baseUrl/anime/$($anime.id)" -Method Put -ContentType 'application/json' -Body $updated
-
-# DELETE
-Invoke-RestMethod "$baseUrl/anime/$($anime.id)" -Method Delete
-```
-
-Samma anrop kan göras i Swagger UI eller Postman. Använd det id som POST returnerar för GET, PUT och DELETE.
-
-### Felhantering
+API:et svarar med JSON, till exempel `{ "error": "Anime hittades inte." }`.
 
 | Status | Betydelse |
 | --- | --- |
-| `400 Bad Request` | Felaktig JSON, saknade/ogiltiga fält eller query-parametrar |
-| `404 Not Found` | Posten eller routen finns inte |
-| `413 Content Too Large` | Request body överskrider 10 kB |
-| `415 Unsupported Media Type` | Fel Content-Type eller en teckenkodning/komprimering som inte stöds |
-| `500 Internal Server Error` | Internt fel, exempelvis saknad, korrupt eller oskrivbar datafil |
+| 400 | Felaktig JSON, ogiltiga fält eller filter/paginering |
+| 404 | Anime eller endpoint finns inte |
+| 413 | För stor body |
+| 415 | Fel innehållstyp eller kodning |
+| 500 | Serverfel, exempelvis om datafilen är trasig eller inte går att läsa/skriva |
 
-Exempel på fel:
+## Lagring
 
-```json
-{
-  "error": "Anime hittades inte."
-}
-```
+Vid första starten kopieras `data/seed.json` till `data/anime.json`. Därefter sparas ändringar i `anime.json` och finns kvar efter omstart. Befintlig data skrivs inte över med startdatan. Startdatan innehåller avslutade TV-serier; avsnittsantal gäller serien som anges, utan filmer och specialavsnitt.
 
-Samtliga CRUD-routes använder gemensam felhantering. Tekniska serverfel loggas i terminalen men stack traces och lokala filsökvägar skickas inte till klienten. En korrupt datafil skrivs inte över automatiskt.
-
-## Datalagring och struktur
-
-Anime sparas i `data/anime.json`, som är ignorerad av Git för att lokala testanrop inte ska ändra repots innehåll. En tom fil skapas endast om filen saknas vid serverstart. Även strukturen på lagrade poster kontrolleras vid läsning. Ändringar skrivs först till en temporär fil som sedan ersätter originalet.
-
-```text
-src/
-  app.js           Express-app och CRUD-routes
-  server.js        Startar servern och skapar datafil vid behov
-  store.js         Läser, kontrollerar och skriver JSON-data
-  validation.js    Validerar och rensar body och query-parametrar
-  error-handler.js Gemensamma felsvar och loggning
-  openapi.js       OpenAPI-specifikation för Swagger UI
-test/
-  crud.test.js         CRUD och beständig lagring
-  list.test.js         Filtrering och paginering
-  validation.test.js   Felaktig indata och sanering
-  errors.test.js       Lagringsfel och samtidiga anrop
-  docs.test.js         Dokumentationens endpoints
-  helpers.js           Isolerade testfiler och testdata
-data/
-  .gitkeep         Behåller datamappen i Git
-```
-
-Fillagringen använder synkrona operationer för att hålla läsning och ändring sammanhängande i en Node-process. Det är enkelt för ett litet kursprojekt men blockerar andra anrop under filåtkomst. API:et är avsett för en serverprocess och en liten datamängd. Vid större användning eller flera processer behövs en databas. API:et saknar autentisering, så alla som når servern kan ändra data.
+`seed.json` finns i GitHub-repot, medan den lokala `anime.json` är ignorerad av Git. JSON-lagringen är tänkt för ett litet projekt med en serverprocess. API:et har ingen inloggning.
 
 ## Tester och TDD
 
-Testerna använder Node.js inbyggda testverktyg (`node:test`) och Supertest för HTTP-anrop. Varje test får en egen tillfällig datafil som tas bort efteråt. Testerna ändrar inte den vanliga datafilen.
+```bash
+npm test
+```
 
-Utvecklingen har gjorts i test-först-steg: tester skrevs och kördes röda innan motsvarande implementation lades till och kördes grön. Git-historiken innehåller separata test- och implementationscommits för CRUD, validering/filtrering/paginering, kontroll av korrupt lagring och Swagger-dokumentation. Testerna för skrivfel och samtidiga anrop verifierade även redan fungerande beteenden.
+Testerna använder `node:test` och Supertest. De testar bland annat CRUD, filtrering, paginering, validering, startdata och lagringsfel. De använder egna tillfälliga filer så att den vanliga datan inte påverkas.
 
-Refactor-steget flyttade den gemensamma felhanteringen till en egen modul för att göra routes lättare att läsa. Samma tester kördes gröna före och efter flytten.
+Jag har arbetat i TDD-steg: först ett test som misslyckas, sedan kod som får det att gå igenom, och därefter förenkling där det behövs. Testerna och implementationerna ligger i separata commits så att stegen går att följa i historiken.
 
-Testsviten kontrollerar bland annat HTTP-status, svarsdata, att ändringar finns på disk, ogiltig indata, kombinerade filter, paginering och att samtliga CRUD-routes hanterar lagringsfel. Att testerna är gröna är en kontroll av dessa beteenden, inte en garanti för att alla möjliga fel är täckta.
-
-## Teknik och referenser
-
-- [Express: felhantering](https://expressjs.com/en/guide/error-handling/)
-- [Node.js: testverktyget](https://nodejs.org/api/test.html)
-- [Swagger UI](https://swagger.io/tools/swagger-ui/)
-- [Supertest](https://github.com/forwardemail/supertest)
+`npm run dev` startar med automatisk omstart när koden ändras. `npm run test:coverage` visar kodtäckningen.
