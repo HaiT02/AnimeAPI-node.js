@@ -1,4 +1,4 @@
-# Anime API
+﻿# Anime API
 
 Det här är mitt projekt för inlämning 2. Jag har byggt ett API med Node.js och Express där man kan lägga till, hämta, ändra och ta bort anime. Jag har hållit det ganska enkelt med en JSON-fil som lagring och ingen frontend.
 
@@ -6,7 +6,7 @@ Det följer med 15 anime, bland annat Naruto, Death Note och Cowboy Bebop, så d
 
 ## Kom igång
 
-Du behöver Node.js 22 eller senare, npm och Git.
+Man behöver Node.js 22 eller senare, npm och Git.
 
 ```bash
 git clone https://github.com/HaiT02/AnimeAPI-node.js.git
@@ -49,7 +49,7 @@ POST och PUT använder `Content-Type: application/json`. Skicka alla fyra fält,
 - `episodes`: ett heltal mellan 0 och 100000.
 - `status`: `upcoming`, `ongoing` eller `finished`.
 
-Extra fält tillåts inte. Onödiga blanksteg rensas bort och genre/status görs om till små bokstäver. HTML-vinkelparenteser och kontrolltecken avvisas. Body får vara högst 10 kB.
+Extra fält tillåts inte. Onödiga blanksteg rensas bort och genre/status görs om till små bokstäver. Body får vara högst 10 kB.
 
 ### Filtrera och bläddra
 
